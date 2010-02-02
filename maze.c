@@ -147,7 +147,7 @@ void square_free(struct square *s)
 void maze_display(struct maze *m)
 {
 	unsigned int x, y;
-	char linebuff[m->width + 1];
+	__extension__ char linebuff[m->width + 1];
 
 	linebuff[m->width] = 0;
 	y = m->height;
