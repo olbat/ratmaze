@@ -10,46 +10,6 @@
 	(E)->coord.y = (Y); \
 })
 
-#define ELEMENT_TRANSLATE(E,TX,TY) __extension__ \
-({ \
-	ELEMENT_SET_COORD((E),(E)->coord.x + (TX),(E)->coord.y + (TY)); \
-})
-
-#define MAZE_MOVE_ELEMENT(M,SX,SY,DX,DY) __extension__ \
-({ \
-	/* \
-	if ((DX >= 0) && (DX < (M)->width) && (DY >= 0) && (DY < (M)->height)) \
-	{ \
-	*/ \
-		(MAZE_GET_SQUARE((M),(DX),(DY)))->element = \
-			(MAZE_GET_SQUARE((M),(SX),(SY)))->element; \
-		(MAZE_GET_SQUARE((M),(SX),(SY)))->element = 0; \
-	/* \
-	} \
-	*/ \
-})
-
-#define MAZE_ELEMENT_TRANSLATE(M,E,TX,TY) __extension__ \
-({ \
-	if ( \
-		(((E)->coord.x + (TX)) >= 0) \
-		&& (((E)->coord.x + (TX)) < (M)->width) \
-		&& (((E)->coord.y + (TY)) >= 0) \
-		&& (((E)->coord.y + (TY)) < (M)->height) \
-	) \
-	{ \
-		MAZE_MOVE_ELEMENT(M,(E)->coord.x,(E)->coord.y, \
-			(E)->coord.x + (TX), (E)->coord.y + (TY)); \
-		ELEMENT_TRANSLATE(E,TX,TY); \
-	} \
-})
-#define MAZE_ELEMENT_MOVE_UP(M,E) MAZE_ELEMENT_TRANSLATE(M,E,0,1)
-#define MAZE_ELEMENT_MOVE_DOWN(M,E) MAZE_ELEMENT_TRANSLATE(M,E,0,-1)
-#define MAZE_ELEMENT_MOVE_LEFT(M,E) MAZE_ELEMENT_TRANSLATE(M,E,-1,0)
-#define MAZE_ELEMENT_MOVE_RIGHT(M,E) MAZE_ELEMENT_TRANSLATE(M,E,1,0)
-
-#define MAZE_GET_SQUARE(M,X,Y) *(*((M)->table + (X)) + (Y))
-
 
 struct maze *maze_create(unsigned int width, unsigned int height)
 {
@@ -97,7 +57,8 @@ void maze_delete(struct maze *m)
 	free(m);
 }
 
-struct square *maze_add(struct maze *m, struct square *s, unsigned int x, unsigned int y)
+struct square *
+maze_add(struct maze *m, struct square *s, unsigned int x, unsigned int y)
 {
 	struct square *ret;
 
@@ -172,46 +133,4 @@ void maze_display(struct maze *m)
 		}
 		printf("%s\n",linebuff);
 	}
-}
-
-
-int main(void)
-{
-	struct maze *m;
-	struct square s;
-	struct element *e = malloc(sizeof(struct element));
-
-	m = maze_create(5,3);
-	s.element = e;
-	e->name = 'R';
-	e->type = MAZE_ELEM_TYPE_RAT;
-
-	maze_add(m,&s,0,0);
-	s.element = 0;
-	maze_add(m,&s,0,1);
-	maze_add(m,&s,0,2);
-	maze_add(m,&s,1,2);
-	maze_add(m,&s,2,0);
-	maze_add(m,&s,2,1);
-	maze_add(m,&s,2,2);
-	maze_add(m,&s,3,2);
-	maze_add(m,&s,4,0);
-	maze_add(m,&s,4,1);
-	maze_add(m,&s,4,2);
-
-
-	maze_display(m);
-	printf("\n");
-	MAZE_ELEMENT_MOVE_UP(m,e);
-	MAZE_ELEMENT_MOVE_UP(m,e);
-	MAZE_ELEMENT_MOVE_RIGHT(m,e);
-	MAZE_ELEMENT_MOVE_LEFT(m,e);
-	MAZE_ELEMENT_MOVE_LEFT(m,e);
-	MAZE_ELEMENT_MOVE_LEFT(m,e);
-	maze_display(m);
-
-	free(e);
-	maze_delete(m);
-
-	return 0;
 }

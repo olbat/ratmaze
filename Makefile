@@ -1,16 +1,19 @@
 CFLAGS= -Wall -ansi -pedantic -O3 -fomit-frame-pointer -g
 CC= gcc ${CFLAGS} 
-SNAME= maze
-SRC= maze.c
-OBJ= $(SRC:.c=.o)
+SNAME= ratmaze
+SRC=maze.c maze_markov.c ratmaze.c
+OBJ=$(SRC:.c=.o)
 
 all : ${SNAME} clean
 	@echo success making ${SNAME}
 dev : ${SNAME}
 	@echo success making ${SNAME}
+${SNAME} : ${OBJ}
+	@echo making ${SNAME}
+	@${CC} -o $@ ${OBJ}
 %.o : %.c
 	@echo -n 'compiling $< ... '
-	@{$CC} -o $@ -c $<
+	@${CC} -o $@ -c $<
 	@echo done
 clean :
 	@echo cleaning object files
