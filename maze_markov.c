@@ -109,6 +109,9 @@ void maze_markov_state_destroy(
 	enum maze_markov_state_build_origin originp
 )
 {
+	if (!current)
+		return;
+
 	if (originp != MAZE_MARKOV_STATE_PATH_CAME_FROM_UP)
 	{
 		maze_markov_state_destroy(current->up,
