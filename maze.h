@@ -6,6 +6,13 @@
 
 
 
+
+#define MAZE_GET_SQUARE(M,X,Y) (*(*((M)->table + (X)) + (Y)))
+#define MAZE_GET_UP_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,X,(Y)+1) 
+#define MAZE_GET_DOWN_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,X,(Y)-1) 
+#define MAZE_GET_LEFT_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,(X)-1,Y) 
+#define MAZE_GET_RIGHT_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,(X)+1,Y) 
+
 #define ELEMENT_TRANSLATE(E,TX,TY) __extension__ \
 ({ \
 	ELEMENT_SET_COORD((E),(E)->coord.x + (TX),(E)->coord.y + (TY)); \
@@ -45,17 +52,12 @@
 #define MAZE_ELEMENT_MOVE_LEFT(M,E) MAZE_ELEMENT_TRANSLATE(M,E,-1,0)
 #define MAZE_ELEMENT_MOVE_RIGHT(M,E) MAZE_ELEMENT_TRANSLATE(M,E,1,0)
 
-#define MAZE_GET_SQUARE(M,X,Y) *(*((M)->table + (X)) + (Y))
-#define MAZE_GET_UP_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,X,(Y)+1) 
-#define MAZE_GET_DOWN_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,X,(Y)-1) 
-#define MAZE_GET_LEFT_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,(X)-1,Y) 
-#define MAZE_GET_RIGHT_SQUARE(M,X,Y) MAZE_GET_SQUARE(M,(X)+1,Y) 
 
 
 
 enum element_type
 {
-	MAZE_ELEM_TYPE_RAT,
+	MAZE_ELEM_TYPE_INIT,
 	MAZE_ELEM_TYPE_GOAL
 };
 

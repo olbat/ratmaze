@@ -15,14 +15,18 @@ main(void)
 	m = maze_create(5,3);
 	s.element = e;
 	e->name = 'R';
-	e->type = MAZE_ELEM_TYPE_RAT;
+	e->type = MAZE_ELEM_TYPE_INIT;
 
 	maze_add(m,&s,0,0);
 	s.element = 0;
 	maze_add(m,&s,0,1);
 	maze_add(m,&s,0,2);
 	maze_add(m,&s,1,2);
+	e->name = 'F';
+	e->type = MAZE_ELEM_TYPE_GOAL;
+	s.element = e;
 	maze_add(m,&s,2,0);
+	s.element = 0;
 	maze_add(m,&s,2,1);
 	maze_add(m,&s,2,2);
 	maze_add(m,&s,3,2);
