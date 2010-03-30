@@ -10,7 +10,7 @@ main(void)
 	struct maze *m;
 	struct square s;
 	struct element *e = malloc(sizeof(struct element));
-	struct maze_markov_chain *mc;
+	struct maze_markov_decision_process *mdp;
 
 	m = maze_create(5,3);
 	s.element = e;
@@ -47,13 +47,13 @@ main(void)
 	maze_display(m);
 	*/
 
-	mc = maze_markov_chain_create(m);
+	mdp = maze_markov_decision_process_create(m);
 
-	maze_markov_chain_display(mc);
+	maze_markov_decision_process_display(mdp);
 
 	free(e);
 	maze_delete(m);
-	maze_markov_chain_destroy(mc);
+	maze_markov_decision_process_destroy(mdp);
 
 	return 0;
 }
