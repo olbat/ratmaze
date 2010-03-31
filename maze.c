@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
 #define ELEMENT_SET_COORD(E,X,Y) __extension__ \
 ({ \
