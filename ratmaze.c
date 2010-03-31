@@ -1,5 +1,6 @@
 #include "maze.h"
 #include "maze_markov.h"
+#include "maze_solver_value_iteration.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -50,6 +51,8 @@ main(void)
 	mdp = maze_markov_decision_process_create(m);
 
 	maze_markov_decision_process_display(mdp);
+
+	maze_solver_vi_perform(mdp);
 
 	free(e);
 	maze_delete(m);

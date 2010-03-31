@@ -177,7 +177,6 @@ maze_markov_state_build(
 				stcnt++;
 		}
 	
-		printf("%d CACA %d\n",ret->id,stcnt);
 		fratio = (MAZE_PROBA_MOVE_FAIL_RATIO 
 			/ (stcnt - (stcnt > 1 ? 1 : 0)));
 
