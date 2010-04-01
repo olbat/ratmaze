@@ -2,17 +2,21 @@
 #include "maze_markov.h"
 #include "maze_markov_bellman.h"
 #include "maze_math.h"
+#include "ratmaze.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
+#ifdef MAZE_DEBUG
+	#include <unistd.h>
+#endif
 
 
 struct maze_solver_vi_list *maze_solver_vi_list_create(
 	unsigned int t,
 	struct maze_solver_vi_list *prec,
-	struct maze_solver_vi_node *vlist
+	struct maze_markov_bellman_vlist *vlist
 )
 {
 	struct maze_solver_vi_list *ret;
@@ -33,52 +37,22 @@ void maze_solver_vi_list_destroy(struct maze_solver_vi_list *l)
 
 	while ((tmpl = l->prec))
 	{
-		maze_solver_vi_node_destroy(l->vlist);
+		maze_markov_bellman_vlist_destroy(l->vlist);
 		free(l);
 		l = tmpl;
 	}
-	maze_solver_vi_node_destroy(l->vlist);
+	maze_markov_bellman_vlist_destroy(l->vlist);
 	free(l);
 }
 
 
-struct maze_solver_vi_node *maze_solver_vi_node_create(
-	struct maze_solver_vi_value *v,
-	struct maze_solver_vi_node *n
-)
-{
-	struct maze_solver_vi_node *ret;
-
-	ret = (struct maze_solver_vi_node *) 
-		malloc(sizeof(struct maze_solver_vi_node));
-
-	ret->next = n;
-	ret->value = v;
-
-	return ret;
-}
-
-void maze_solver_vi_node_destroy(struct maze_solver_vi_node *n)
-{
-	struct maze_solver_vi_node *tmpn;
-
-	while ((tmpn = n->next))
-	{
-		maze_solver_vi_value_remove(n->value);
-		free(n);
-		n = tmpn;
-	}
-	maze_solver_vi_value_remove(n->value);
-	free(n);
-}
-
 /* #define MAZE_SOLVER_VI_GET_ACTION_COST() \ */
 __inline__ float maze_solver_vi_get_action_cost(
 	struct maze_markov_transition_list *l,
-	struct maze_solver_vi_node *prec
+	struct maze_markov_bellman_vlist *prec
 )
 {
-	struct maze_solver_vi_node *n;
+	struct maze_markov_bellman_vlist *n;
 	float preccost;
 	float ret;
 
@@ -87,11 +61,11 @@ __inline__ float maze_solver_vi_get_action_cost(
 	do
 	{
 		n = prec;
-		while ((n) && (n->value->state != l->dest))
+		while ((n) && (n->state != l->dest))
 			n = n->next;
 		
 		if (n)
-			preccost = n->value->cost;
+			preccost = n->cost;
 		else
 			preccost = 0.0f;
 
@@ -107,20 +81,15 @@ __inline__ float maze_solver_vi_get_action_cost(
 	return ret;
 }
 
-struct maze_solver_vi_value *maze_solver_vi_value_create(
+float maze_solver_vi_get_vlist_cost(
 	struct maze_markov_state *state,
-	struct maze_solver_vi_node *prec
+	struct maze_markov_bellman_vlist *prec
 )
 {
-	struct maze_solver_vi_value *ret;
+	float ret;
 	float vup,vdown,vleft,vright, max;
 
-	ret = (struct maze_solver_vi_value *) 
-		malloc(sizeof(struct maze_solver_vi_value));
-
 	vup = vdown = vleft = vright = max = FLT_MIN;
-
-	ret->state = state;
 
 	if (state->up)
 	{
@@ -143,16 +112,13 @@ struct maze_solver_vi_value *maze_solver_vi_value_create(
 		max = MAX(vright,max);	
 	}
 
-	ret->cost = max; 
+	ret = max; 
+#ifdef MAZE_DEBUG
+	printf("V(%d)=%g\n",state->id,max);
+#endif
 	
 	return ret;	
 }
-
-void maze_solver_vi_value_remove(struct maze_solver_vi_value *v)
-{
-	free(v);
-}
-
 
 void maze_solver_vi_list_display(struct maze_solver_vi_list *l)
 {
@@ -162,10 +128,12 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 {
 	unsigned int t;
 	float maxs, tmpf;
-	struct maze_solver_vi_node *node, *nodenew;
+	struct maze_markov_bellman_vlist *node, *nodenew;
 	struct maze_solver_vi_list *tlist, *prectlist;
 	struct maze_markov_state_list *sl;
-
+#ifdef MAZE_DEBUG
+	char buffc;
+#endif
 
 	t = 0;
 	prectlist = 0;
@@ -174,18 +142,25 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 	{
 		sl = mdp->states;
 		node = 0;
-
+		
+#ifdef MAZE_DEBUG
+		printf("[t:%d]\n",t);
+#endif
 		while (sl)
 		{
-			node = maze_solver_vi_node_create(
-				maze_solver_vi_value_create(
-					sl->node, 
+			node = maze_markov_bellman_vlist_create(
+				sl->node,
+				maze_solver_vi_get_vlist_cost(
+					sl->node,
 					(prectlist?prectlist->vlist:0)
 				),
 				node
 			);
 			sl = sl->next;
 		}
+#ifdef MAZE_DEBUG
+		buffc = read(0,&buffc,sizeof(buffc));
+#endif
 		tlist = maze_solver_vi_list_create(t,prectlist,node);
 		
 		/* perform max Vt(S) - Vt-1(S) */
@@ -196,14 +171,14 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 			node = (prectlist?prectlist->vlist:0);
 			while (
 				(node) && 
-				(node->value->state != nodenew->value->state)
+				(node->state != nodenew->state)
 			)
 				node = node->next;
 
 			if (node)
-				tmpf = (fabs(nodenew->value->cost - node->value->cost));
+				tmpf = (fabs(nodenew->cost - node->cost));
 			else
-				tmpf = (fabs(nodenew->value->cost - MAZE_SOLVER_VI_V0));
+				tmpf = (fabs(nodenew->cost - MAZE_SOLVER_VI_V0));
 			if (tmpf > maxs)
 				maxs = tmpf; 
 
@@ -212,8 +187,11 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 		
 		prectlist = tlist;
 		t++;
-		printf("%g\n",maxs);
 	} while (maxs > MAZE_SOLVER_VI_EPSYLON);
 	maze_solver_vi_list_destroy(tlist);
 	printf("Value Iteration: %d iterations, V%d: %g\n",t,t,maxs);
+
+	/* find the optimal solution */
+	
 }
+
