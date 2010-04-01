@@ -3,6 +3,54 @@
 
 #include "maze.h"
 
+#define MAZE_MARKOV_ACTION_NAMES(A) __extension__ \
+({ \
+	char *RET; \
+	switch (A) \
+	{ \
+		case MAZE_MARKOV_ACTION_UP: \
+			RET = "UP"; \
+			break; \
+		case MAZE_MARKOV_ACTION_DOWN: \
+			RET = "DOWN"; \
+			break; \
+		case MAZE_MARKOV_ACTION_LEFT: \
+			RET = "LEFT"; \
+			break; \
+		case MAZE_MARKOV_ACTION_RIGHT: \
+			RET = "RIGHT"; \
+			break; \
+		default: \
+			RET = "NO ACTION"; \
+			break; \
+	} \
+	RET; \
+})
+
+#define MAZE_MARKOV_GET_TRANSITION_LIST(S,A) __extension__ \
+({ \
+	struct maze_markov_transition_list *RET; \
+	switch (A) \
+	{ \
+		case MAZE_MARKOV_ACTION_UP: \
+			RET = (S)->up; \
+			break; \
+		case MAZE_MARKOV_ACTION_DOWN: \
+			RET = (S)->down; \
+			break; \
+		case MAZE_MARKOV_ACTION_LEFT: \
+			RET = (S)->left; \
+			break; \
+		case MAZE_MARKOV_ACTION_RIGHT: \
+			RET = (S)->right; \
+			break; \
+		default: \
+			RET = 0; \
+			break; \
+	} \
+	RET; \
+})
+
 #define MAZE_MARKOV_ACTION_NB 4
 enum maze_markov_action
 {

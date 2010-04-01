@@ -1,0 +1,3 @@
+-utiliser la macro qui recherche action=>liste
+-utiliser des __typeof__
+-utiliser des sizeof pour les tableaux à taille fixe

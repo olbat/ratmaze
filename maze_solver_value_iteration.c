@@ -46,7 +46,7 @@ void maze_solver_vi_list_destroy(struct maze_solver_vi_list *l)
 }
 
 
-/* #define MAZE_SOLVER_VI_GET_ACTION_COST() \ */
+/*
 __inline__ float maze_solver_vi_get_action_cost(
 	struct maze_markov_transition_list *l,
 	struct maze_markov_bellman_vlist *prec
@@ -80,6 +80,7 @@ __inline__ float maze_solver_vi_get_action_cost(
 
 	return ret;
 }
+*/
 
 float maze_solver_vi_get_vlist_cost(
 	struct maze_markov_state *state,
@@ -93,22 +94,22 @@ float maze_solver_vi_get_vlist_cost(
 
 	if (state->up)
 	{
-		vup = maze_solver_vi_get_action_cost(state->up,prec);
+		vup = maze_markov_bellman_get_action_cost(state->up,prec);
 		max = vup;
 	}
 	if (state->down)
 	{
-		vdown = maze_solver_vi_get_action_cost(state->down,prec);
+		vdown = maze_markov_bellman_get_action_cost(state->down,prec);
 		max = MAX(vdown,max);	
 	}
 	if (state->left)
 	{
-		vleft = maze_solver_vi_get_action_cost(state->left,prec);
+		vleft = maze_markov_bellman_get_action_cost(state->left,prec);
 		max = MAX(vleft,max);	
 	}
 	if (state->right)
 	{
-		vright = maze_solver_vi_get_action_cost(state->right,prec);
+		vright = maze_markov_bellman_get_action_cost(state->right,prec);
 		max = MAX(vright,max);	
 	}
 
@@ -131,6 +132,7 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 	struct maze_markov_bellman_vlist *node, *nodenew;
 	struct maze_solver_vi_list *tlist, *prectlist;
 	struct maze_markov_state_list *sl;
+	struct maze_markov_bellman_list *qlist;
 #ifdef MAZE_DEBUG
 	char buffc;
 #endif
@@ -188,10 +190,15 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 		prectlist = tlist;
 		t++;
 	} while (maxs > MAZE_SOLVER_VI_EPSYLON);
-	maze_solver_vi_list_destroy(tlist);
 	printf("Value Iteration: %d iterations, V%d: %g\n",t,t,maxs);
 
 	/* find the optimal solution */
+	qlist = maze_markov_bellman_qlist_create(mdp,tlist->vlist);
+	printf("\nQ List:\n");
+	maze_markov_bellman_list_display(qlist);
+	printf("---\n");
 	
+	maze_solver_vi_list_destroy(tlist);
+	maze_markov_bellman_list_destroy(qlist);
 }
 

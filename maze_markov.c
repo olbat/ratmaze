@@ -241,10 +241,10 @@ void maze_markov_decision_process_display(struct maze_markov_decision_process *m
 	printf("\n}\n"
 		"A = {\n\t%s,\n\t%s,\n\t%s,\n\t%s\n}\n"
 		"T = {",
-		maze_markov_action_names(MAZE_MARKOV_ACTION_UP), 
-		maze_markov_action_names(MAZE_MARKOV_ACTION_DOWN), 
-		maze_markov_action_names(MAZE_MARKOV_ACTION_LEFT), 
-		maze_markov_action_names(MAZE_MARKOV_ACTION_RIGHT) 
+		MAZE_MARKOV_ACTION_NAMES(MAZE_MARKOV_ACTION_UP), 
+		MAZE_MARKOV_ACTION_NAMES(MAZE_MARKOV_ACTION_DOWN), 
+		MAZE_MARKOV_ACTION_NAMES(MAZE_MARKOV_ACTION_LEFT), 
+		MAZE_MARKOV_ACTION_NAMES(MAZE_MARKOV_ACTION_RIGHT) 
 	);
 	maze_markov_transition_display(mdp->states);
 	printf("\n}\nR = {");
@@ -269,7 +269,7 @@ if (L) \
 { \
 	do \
 	{ \
-		printf("\n\t(%d,%s,%d) = %g",(SRC)->id,maze_markov_action_names((L)->action),(L)->dest->id,(L)->probability); \
+		printf("\n\t(%d,%s,%d) = %g",(SRC)->id,MAZE_MARKOV_ACTION_NAMES((L)->action),(L)->dest->id,(L)->probability); \
 		(L) = (L)->next; \
 	} while ((L)); \
 }
@@ -293,27 +293,6 @@ void maze_markov_transition_display(struct maze_markov_state_list *l)
 	} while (l);
 }
 
-__inline__ const char *maze_markov_action_names(enum maze_markov_action a)
-{
-	switch (a)
-	{
-		case MAZE_MARKOV_ACTION_UP:
-			return "UP";
-			break;
-		case MAZE_MARKOV_ACTION_DOWN:
-			return "DOWN";
-			break;
-		case MAZE_MARKOV_ACTION_LEFT:
-			return "LEFT";
-			break;
-		case MAZE_MARKOV_ACTION_RIGHT:
-			return "RIGHT";
-			break;
-		default:
-			return "NO ACTION";
-			break;
-	}
-}
 
 void maze_markov_reward_display(struct maze_markov_state_list *l)
 {
