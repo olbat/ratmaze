@@ -157,6 +157,38 @@ void maze_markov_bellman_list_destroy(struct maze_markov_bellman_list *l)
 	free(l);
 }
 
+struct maze_markov_bellman_policy *maze_markov_bellman_policy_create(
+	struct maze_markov_state *s,
+	enum maze_markov_action a,
+	float c,
+	struct maze_markov_bellman_policy *n
+)
+{
+	struct maze_markov_bellman_policy *ret;
+
+	ret = (struct maze_markov_bellman_policy *) 
+		malloc(sizeof(struct maze_markov_bellman_policy));
+
+	ret->state = s;
+	ret->action = a;
+	ret->cost = c;
+	ret->next = n;
+
+	return ret;
+}
+
+void maze_markov_bellman_policy_destroy(struct maze_markov_bellman_policy *l)
+{
+	__typeof__(l) tmp;
+
+	while ((tmp = l->next))
+	{
+		free(l);
+		l = tmp;
+	}
+	free(l);
+}
+
 struct maze_markov_bellman_list *maze_markov_bellman_qlist_create(
 	struct maze_markov_decision_process *mdp,
 	struct maze_markov_bellman_vlist *vstar
@@ -199,6 +231,34 @@ struct maze_markov_bellman_list *maze_markov_bellman_qlist_create(
 	return ret;
 }
 
+struct maze_markov_bellman_policy *maze_markov_bellman_optimal_policy_create(
+	struct maze_markov_bellman_list *qlist
+)
+{
+	struct maze_markov_bellman_policy *ret;
+	struct maze_markov_bellman_node *n,*maxn;
+
+	ret = 0;
+	do
+	{
+		n = maxn = qlist->list;
+		do
+		{
+			if (n->cost > maxn->cost)
+				maxn = n;
+			n = n->next;
+		} while (n);
+
+		ret = maze_markov_bellman_policy_create(
+			qlist->state, maxn->action, maxn->cost, ret
+		);
+		
+		qlist = qlist->next;
+	} while (qlist);
+
+	return ret;
+}
+
 void maze_markov_bellman_list_display(struct maze_markov_bellman_list *l)
 {
 	__typeof__(l->list) ln;
@@ -209,7 +269,7 @@ void maze_markov_bellman_list_display(struct maze_markov_bellman_list *l)
 		ln = l->list;
 		do
 		{
-			printf("\t\tQ(%d,%s)=%g\n",
+			printf("\t\tQ*(%d,%s)=%g\n",
 				l->state->id,
 				MAZE_MARKOV_ACTION_NAMES(ln->action),
 				ln->cost
@@ -221,3 +281,15 @@ void maze_markov_bellman_list_display(struct maze_markov_bellman_list *l)
 	} while (l);
 }
 
+void maze_markov_bellman_policy_display(struct maze_markov_bellman_policy *l)
+{
+	printf("\nOptimal policy:\n");
+	do
+	{
+		printf("\tµ*(%d)=%s\n",
+			l->state->id,
+			MAZE_MARKOV_ACTION_NAMES(l->action)
+		);
+		l = l->next;
+	} while (l);
+}

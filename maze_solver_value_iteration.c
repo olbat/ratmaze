@@ -133,6 +133,7 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 	struct maze_solver_vi_list *tlist, *prectlist;
 	struct maze_markov_state_list *sl;
 	struct maze_markov_bellman_list *qlist;
+	struct maze_markov_bellman_policy *policy;
 #ifdef MAZE_DEBUG
 	char buffc;
 #endif
@@ -194,11 +195,14 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 
 	/* find the optimal solution */
 	qlist = maze_markov_bellman_qlist_create(mdp,tlist->vlist);
+	policy = maze_markov_bellman_optimal_policy_create(qlist);
 	printf("\nQ List:\n");
 	maze_markov_bellman_list_display(qlist);
+	maze_markov_bellman_policy_display(policy);
 	printf("---\n");
 	
 	maze_solver_vi_list_destroy(tlist);
 	maze_markov_bellman_list_destroy(qlist);
+	maze_markov_bellman_policy_destroy(policy);
 }
 

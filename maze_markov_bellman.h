@@ -31,7 +31,14 @@ struct maze_markov_bellman_list
 	struct maze_markov_bellman_list *next;
 };
 
+struct maze_markov_bellman_policy
+{
+	struct maze_markov_state *state;
+	enum maze_markov_action action;
+	float cost;
 
+	struct maze_markov_bellman_policy *next;
+};
 
 struct maze_markov_bellman_vlist *maze_markov_bellman_vlist_create(struct maze_markov_state *s,float c,struct maze_markov_bellman_vlist *l);
 void maze_markov_bellman_vlist_destroy(struct maze_markov_bellman_vlist *l);
@@ -44,8 +51,15 @@ void maze_markov_bellman_node_destroy(struct maze_markov_bellman_node *v);
 struct maze_markov_bellman_list *maze_markov_bellman_list_create(struct maze_markov_state *s,struct maze_markov_bellman_node *l,struct maze_markov_bellman_list *n);
 void maze_markov_bellman_list_destroy(struct maze_markov_bellman_list *l);
 
+
+struct maze_markov_bellman_policy *maze_markov_bellman_policy_create(struct maze_markov_state *s,enum maze_markov_action a,float c,struct maze_markov_bellman_policy *n);
+void maze_markov_bellman_policy_destroy(struct maze_markov_bellman_policy *l);
+
 struct maze_markov_bellman_list *maze_markov_bellman_qlist_create(struct maze_markov_decision_process *mdp,struct maze_markov_bellman_vlist *vstar);
 
+struct maze_markov_bellman_policy *maze_markov_bellman_optimal_policy_create(struct maze_markov_bellman_list *qlist);
+
 void maze_markov_bellman_list_display(struct maze_markov_bellman_list *l);
+void maze_markov_bellman_policy_display(struct maze_markov_bellman_policy *l);
 
 #endif
