@@ -19,16 +19,21 @@ void maze_solver_qlearning_perform(
 	struct maze_markov_bellman_node *tmpnode;
 	enum maze_markov_action cura;
 	float alpha, reward, maxq;
+	unsigned int i;
 
 	curs = mdp->init;	
 	alpha = MAZE_SOLVER_QLEARNING_DEFAULT_ALPHA;
 	qlist = maze_markov_bellman_default_qlist_create(
 		mdp,MAZE_SOLVER_QLEARNING_DEFAULT_Q0
 	);
+	i=0;
+
 	srand(time(0));
 
-	while (limit--)
+	while (i < limit)
 	{
+		alpha = MAZE_SOLVER_QLEARNING_DEFAULT_ALPHA * ((limit - i) / (float)limit);
+	
 		cura = maze_markov_get_action_random();
 		nexts = maze_markov_state_action_perform(
 			mdp->states,curs,cura,&reward
@@ -67,13 +72,14 @@ void maze_solver_qlearning_perform(
 		);
 #ifdef MAZE_DEBUG
 		printf("Step %d:\n\ts:%d, s':%d, a:%s\n\tQ(s,a)=%g\n\talpha=%g\n",
-			limit,curs->id,nexts->id,MAZE_MARKOV_ACTION_NAMES(cura),
+			i,curs->id,nexts->id,MAZE_MARKOV_ACTION_NAMES(cura),
 			maze_markov_bellman_qlist_get_cost(qlist,curs,cura),
 			alpha
 		);
 			
 #endif
 		curs = nexts;
+		i++;
 	}
 
 	policy = maze_markov_bellman_optimal_policy_create(qlist);

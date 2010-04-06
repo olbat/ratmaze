@@ -55,7 +55,7 @@ main(void)
 	maze_markov_decision_process_display(mdp);
 
 	/* maze_solver_vi_perform(mdp); */
-	maze_solver_qlearning_perform(mdp, 1024);
+	maze_solver_qlearning_perform(mdp, 512);
 
 	free(e);
 	maze_delete(m);
