@@ -198,6 +198,7 @@ void maze_solver_vi_perform(struct maze_markov_decision_process *mdp)
 	policy = maze_markov_bellman_optimal_policy_create(qlist);
 	printf("\nQ List:\n");
 	maze_markov_bellman_list_display(qlist);
+	printf("\nOptimal policy:\n");
 	maze_markov_bellman_policy_display(policy);
 	printf("---\n");
 	

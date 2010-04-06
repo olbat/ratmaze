@@ -1,7 +1,7 @@
 CFLAGS= -Wall -ansi -pedantic -O3 -fomit-frame-pointer -g
 CC= gcc ${CFLAGS} 
 SNAME= ratmaze
-SRC=maze.c maze_markov.c maze_markov_bellman.c maze_solver_value_iteration.c ratmaze.c
+SRC=maze.c maze_markov.c maze_markov_bellman.c maze_solver_value_iteration.c maze_solver_qlearning.c ratmaze.c
 OBJ=$(SRC:.c=.o)
 
 all : ${SNAME} clean

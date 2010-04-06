@@ -1,8 +1,9 @@
 #include "maze_markov_bellman.h"
 #include "maze_markov.h"
 
-#include "stdio.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <float.h>
 
 struct maze_markov_bellman_vlist *maze_markov_bellman_vlist_create(
 	struct maze_markov_state *s,
@@ -113,6 +114,33 @@ out:
 	return ret;
 }
 
+struct maze_markov_bellman_node *maze_markov_bellman_node_default_create(
+	struct maze_markov_state *s,
+	enum maze_markov_action a,
+	float cost,
+	struct maze_markov_bellman_node *n
+)
+{
+	struct maze_markov_bellman_node *ret;
+	struct maze_markov_transition_list *tl;
+
+	if (!(tl = MAZE_MARKOV_GET_TRANSITION_LIST(s,a)))
+		goto err;
+
+	ret = (struct maze_markov_bellman_node *)
+		malloc(sizeof(struct maze_markov_bellman_node));
+
+	ret->action = a;
+	ret->cost = cost;
+	ret->next = n;
+
+	goto out;
+err:
+	return 0;
+out:
+	return ret;
+}
+
 void maze_markov_bellman_node_destroy(struct maze_markov_bellman_node *l)
 {
 	struct maze_markov_bellman_node *tmpl;
@@ -187,6 +215,99 @@ void maze_markov_bellman_policy_destroy(struct maze_markov_bellman_policy *l)
 		l = tmp;
 	}
 	free(l);
+}
+
+void maze_markov_bellman_qlist_set_cost(
+	struct maze_markov_bellman_list *l,
+	struct maze_markov_state *s,
+	enum maze_markov_action a,
+	float val
+)
+{
+	while ((l) && (l->state != s))
+		l = l->next;
+
+	if (l)
+	{
+		__typeof__(l->list) ln;
+		ln = l->list;
+		
+		while ((ln) && (ln->action != a))
+			ln = ln->next;
+
+		if (ln)
+			ln->cost = val;
+	}
+}
+
+float maze_markov_bellman_qlist_get_cost(
+	struct maze_markov_bellman_list *l,
+	struct maze_markov_state *s,
+	enum maze_markov_action a
+)
+{
+	float ret;
+
+	ret = FLT_MIN;
+
+	while ((l) && (l->state != s))
+		l = l->next;
+
+	if (l)
+	{
+		__typeof__(l->list) ln;
+		ln = l->list;
+		
+		while ((ln) && (ln->action != a))
+			ln = ln->next;
+
+		if (ln)
+			ret = ln->cost;
+	}
+
+	return ret;
+}
+
+struct maze_markov_bellman_list *maze_markov_bellman_default_qlist_create(
+	struct maze_markov_decision_process *mdp,
+	float defcost
+)
+{
+	struct maze_markov_bellman_list *ret;
+	__typeof__(mdp->states) l;
+	struct maze_markov_bellman_node *n,*tmpn;
+	unsigned int i;
+	enum maze_markov_action possibleact[] = {
+		MAZE_MARKOV_ACTION_UP,
+		MAZE_MARKOV_ACTION_DOWN,
+		MAZE_MARKOV_ACTION_LEFT,
+		MAZE_MARKOV_ACTION_RIGHT
+	};
+		
+
+	l = mdp->states;
+	ret = 0;
+	do
+	{
+		n = 0;
+		for (i = 0; i < MAZE_MARKOV_ACTION_NB; i++)
+		{
+			tmpn = maze_markov_bellman_node_default_create(
+				l->node,
+				possibleact[i],
+				defcost,
+				n
+			);
+			if (tmpn)
+				n = tmpn;
+		}
+
+		ret = maze_markov_bellman_list_create(l->node,n,ret);
+		
+		l = l->next;
+	} while (l);
+
+	return ret;
 }
 
 struct maze_markov_bellman_list *maze_markov_bellman_qlist_create(
@@ -283,7 +404,6 @@ void maze_markov_bellman_list_display(struct maze_markov_bellman_list *l)
 
 void maze_markov_bellman_policy_display(struct maze_markov_bellman_policy *l)
 {
-	printf("\nOptimal policy:\n");
 	do
 	{
 		printf("\tµ*(%d)=%s\n",

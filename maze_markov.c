@@ -1,8 +1,10 @@
 #include "maze_markov.h"
 #include "maze_probabilities.h"
 #include "maze.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MAZE_MARKOV_TRANSITION_DEFAULT_COST 1
 
@@ -56,6 +58,44 @@ void maze_markov_state_remove(struct maze_markov_state *s)
 	maze_markov_transition_destroy(s->left);
 	maze_markov_transition_destroy(s->right);
 	free(s);
+}
+
+struct maze_markov_state *maze_markov_state_action_perform(
+	struct maze_markov_state_list *l,
+	struct maze_markov_state *s,
+	enum maze_markov_action a,
+	float *reward
+)
+{
+	struct maze_markov_state *ret;
+
+	ret = 0;
+	while ((l) && (l->node != s))
+		l = l->next;
+
+	if (l)
+	{
+		struct maze_markov_transition_list *tl, *tmptl;
+		float randf, randsum;
+
+		tl = MAZE_MARKOV_GET_TRANSITION_LIST(s,a);
+
+		randf = (float) (rand() / ((float)RAND_MAX + 1));
+
+		randsum = 0.0f;
+
+		while ((tmptl = tl->next) && (randsum < randf))
+		{
+			randsum += tl->probability;
+			if (randsum < randf)
+				tl = tmptl;
+		}
+
+		*reward = tl->dest->reward;
+		ret = tl->dest;
+	}
+
+	return ret;
 }
 
 struct maze_markov_state_list *maze_markov_state_list_add(
@@ -302,4 +342,16 @@ void maze_markov_reward_display(struct maze_markov_state_list *l)
 
 		l = l->next;
 	} while (l);
+}
+
+enum maze_markov_action maze_markov_get_action_random()
+{
+	static enum maze_markov_action possibleact[] = {
+		MAZE_MARKOV_ACTION_UP,
+		MAZE_MARKOV_ACTION_DOWN,
+		MAZE_MARKOV_ACTION_LEFT,
+		MAZE_MARKOV_ACTION_RIGHT
+	};
+
+	return possibleact[(rand() % MAZE_MARKOV_ACTION_NB)];
 }

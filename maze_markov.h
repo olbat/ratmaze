@@ -99,6 +99,7 @@ void maze_markov_decision_process_destroy(struct maze_markov_decision_process *m
 
 struct maze_markov_state *maze_markov_state_create(unsigned int x, unsigned int y, float reward);
 void maze_markov_state_remove(struct maze_markov_state *s);
+struct maze_markov_state *maze_markov_state_action_perform(struct maze_markov_state_list *l,struct maze_markov_state *s,enum maze_markov_action a,float *res);
 
 struct maze_markov_state_list *maze_markov_state_list_add(struct maze_markov_state_list *n,struct maze_markov_state *s);
 void maze_markov_state_list_destroy(struct maze_markov_state_list *l);
@@ -114,5 +115,6 @@ void maze_markov_state_display(struct maze_markov_state_list *l);
 void maze_markov_transition_display(struct maze_markov_state_list *l);
 __inline__ const char *maze_markov_action_names(enum maze_markov_action a);
 void maze_markov_reward_display(struct maze_markov_state_list *l);
+enum maze_markov_action maze_markov_get_action_random();
 
 #endif
