@@ -9,12 +9,24 @@
 
 
 int
-main(void)
+main(int argc, char **argv)
 {
 	struct maze *m;
 	struct square s;
 	struct element *e = malloc(sizeof(struct element));
 	struct maze_markov_decision_process *mdp;
+	int tmp;
+
+	if (argc < 2)
+	{
+		printf( "usage: %s <algorithm> [Q-learling limit]\n"
+			"\t[0] Value Iteration\n"
+			"\t[1] Policy Iteration\n"
+			"\t[2] Q-learning (default)\n",
+			argv[0]
+		);
+		exit(EXIT_SUCCESS);
+	}
 
 	m = maze_create(5,3);
 	s.element = e;
@@ -61,9 +73,20 @@ main(void)
 
 	maze_markov_decision_process_display(mdp);
 
-	/* maze_solver_vi_perform(mdp); */
-	maze_solver_pi_perform(mdp);
-	/* maze_solver_qlearning_perform(mdp, 1000); */
+	if ((tmp = atoi(argv[1])) == 0)
+		maze_solver_vi_perform(mdp);
+	else if (tmp == 1)
+		maze_solver_pi_perform(mdp);
+	else
+	{
+		maze_solver_qlearning_perform(
+			mdp,
+			(argv[2] 
+				? atoi(argv[2])
+				: MAZE_SOLVER_QLEARNING_DEFAULT_ITER
+			)
+		);
+	}
 
 	free(e);
 	maze_delete(m);

@@ -1,10 +1,12 @@
 #include "maze_solver_policy_iteration.h"
 #include "maze_markov.h"
 #include "maze_markov_bellman.h"
+#include "ratmaze.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
+#include <unistd.h>
 
 struct maze_solver_pi_list *maze_solver_pi_list_create(
 	unsigned int t,
@@ -38,6 +40,7 @@ void maze_solver_pi_list_destroy(struct maze_solver_pi_list *l)
 		l = tmpl;
 	}
 	maze_markov_bellman_vlist_destroy(l->vlist);
+	maze_markov_bellman_policy_destroy(l->policy);
 	free(l);
 }
 
@@ -74,7 +77,7 @@ void maze_solver_pi_perform(struct maze_markov_decision_process *mdp)
 	struct maze_solver_pi_list *tlist, *prectlist;
 	struct maze_markov_state_list *sl;
 	struct maze_markov_bellman_list *qlist;
-	struct maze_markov_bellman_policy *initpolicy, *policy, *precpolicy;
+	struct maze_markov_bellman_policy *policy, *precpolicy;
 #ifdef MAZE_DEBUG
 	char buffc;
 #endif
@@ -94,7 +97,6 @@ void maze_solver_pi_perform(struct maze_markov_decision_process *mdp)
 		);
 		sl = sl->next;
 	}
-	initpolicy = policy;
 
 	do
 	{
@@ -141,9 +143,7 @@ void maze_solver_pi_perform(struct maze_markov_decision_process *mdp)
 	maze_markov_bellman_policy_display(policy);
 	printf("---\n");
 	
+	maze_markov_bellman_policy_destroy(policy);
 	maze_solver_pi_list_destroy(tlist);
 	maze_markov_bellman_list_destroy(qlist);
-	if (precpolicy)
-		maze_markov_bellman_policy_destroy(policy);
-	maze_markov_bellman_policy_destroy(initpolicy);
 }
