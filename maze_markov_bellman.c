@@ -217,6 +217,54 @@ void maze_markov_bellman_policy_destroy(struct maze_markov_bellman_policy *l)
 	free(l);
 }
 
+#define MAZE_MARKOV_BELLMAN_POLICY_LOOKUP_ITER(L,S) \
+	while ((L) && (L->state != (S))) \
+		L = L->next;
+
+enum maze_markov_action maze_markov_bellman_policy_get_action(
+	struct maze_markov_state *s,
+	struct maze_markov_bellman_policy *p
+)
+{
+	enum maze_markov_action ret;
+
+	MAZE_MARKOV_BELLMAN_VLIST_LOOKUP_ITER(p,s);
+
+	ret = -1;
+
+	if (p)
+		ret = p->action;
+
+	return ret;
+}
+
+int maze_markov_bellman_policy_compare(
+	struct maze_markov_bellman_policy *p1,
+	struct maze_markov_bellman_policy *p2
+)
+{
+	int ret;
+	__typeof__(p2) tmp;
+	ret = 0;
+
+	while (p1)
+	{
+		tmp = p2;
+		
+		MAZE_MARKOV_BELLMAN_VLIST_LOOKUP_ITER(tmp,p1->state);
+
+		if ((!tmp) || (p1->cost != tmp->cost))
+			break;
+
+		p1 = p1->next;
+	}
+	
+	if (!p1)
+		ret = 1;
+
+	return ret;
+}
+
 void maze_markov_bellman_qlist_set_cost(
 	struct maze_markov_bellman_list *l,
 	struct maze_markov_state *s,

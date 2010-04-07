@@ -4,6 +4,8 @@
 #define MAZE_DISPLAY_EMPTY_SQUARE 'o'
 #define MAZE_DISPLAY_NO_SQUARE '.'
 
+#define MAZE_DEFAULT_REWARD 0
+
 
 
 
@@ -71,6 +73,7 @@ struct element
 {
 	char name;
 	struct point coord;
+	signed int reward;
 	enum element_type type;
 };
 

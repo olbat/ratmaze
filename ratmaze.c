@@ -1,6 +1,7 @@
 #include "maze.h"
 #include "maze_markov.h"
 #include "maze_solver_value_iteration.h"
+#include "maze_solver_policy_iteration.h"
 #include "maze_solver_qlearning.h"
 
 #include <stdio.h>
@@ -20,12 +21,18 @@ main(void)
 	e->name = 'R';
 	e->type = MAZE_ELEM_TYPE_INIT;
 
-	maze_add(m,&s,0,0);
 	s.element = 0;
+	maze_add(m,&s,0,0);
 	maze_add(m,&s,0,1);
+	e->name = 'G';
+	e->reward = 1;
+	e->type = MAZE_ELEM_TYPE_GOAL;
+	s.element = e;
 	maze_add(m,&s,0,2);
+	s.element = 0;
 	maze_add(m,&s,1,2);
 	e->name = 'F';
+	e->reward = 10;
 	e->type = MAZE_ELEM_TYPE_GOAL;
 	s.element = e;
 	maze_add(m,&s,2,0);
@@ -55,7 +62,8 @@ main(void)
 	maze_markov_decision_process_display(mdp);
 
 	/* maze_solver_vi_perform(mdp); */
-	maze_solver_qlearning_perform(mdp, 512);
+	maze_solver_pi_perform(mdp);
+	/* maze_solver_qlearning_perform(mdp, 1000); */
 
 	free(e);
 	maze_delete(m);

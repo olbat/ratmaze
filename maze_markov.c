@@ -201,7 +201,14 @@ maze_markov_state_build(
 		unsigned int stcnt, i;
 		float fratio;
 
-		ret = maze_markov_state_create(x,y,(MAZE_IS_GOAL(m,x,y)?1:0));
+		ret = maze_markov_state_create(
+			x,
+			y,
+			(MAZE_GET_SQUARE(m,x,y)->element 
+				? MAZE_GET_SQUARE(m,x,y)->element->reward 
+				: MAZE_DEFAULT_REWARD
+			)
+		);
 		stcnt = 0;
 
 		*expect = maze_markov_state_list_add(*expect,ret);
