@@ -46,42 +46,6 @@ void maze_solver_vi_list_destroy(struct maze_solver_vi_list *l)
 }
 
 
-/*
-__inline__ float maze_solver_vi_get_action_cost(
-	struct maze_markov_transition_list *l,
-	struct maze_markov_bellman_vlist *prec
-)
-{
-	struct maze_markov_bellman_vlist *n;
-	float preccost;
-	float ret;
-
-	ret = 0.0f;
-
-	do
-	{
-		n = prec;
-		while ((n) && (n->state != l->dest))
-			n = n->next;
-		
-		if (n)
-			preccost = n->cost;
-		else
-			preccost = 0.0f;
-
-		ret += (l->probability * 
-			(l->dest->reward + 
-				(MAZE_MARKOV_BELLMAN_GAMMA * preccost) 
-			)
-		);
-
-		l = l->next;
-	} while (l);
-
-	return ret;
-}
-*/
-
 float maze_solver_vi_get_vlist_cost(
 	struct maze_markov_state *state,
 	struct maze_markov_bellman_vlist *prec

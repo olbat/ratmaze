@@ -57,6 +57,7 @@ struct maze_markov_bellman_policy *maze_markov_bellman_policy_create(struct maze
 void maze_markov_bellman_policy_destroy(struct maze_markov_bellman_policy *l);
 int maze_markov_bellman_policy_compare(struct maze_markov_bellman_policy *p1,struct maze_markov_bellman_policy *p2);
 enum maze_markov_action maze_markov_bellman_policy_get_action(struct maze_markov_state *s,struct maze_markov_bellman_policy *p);
+struct maze_markov_bellman_vlist *maze_markov_bellman_policy_vlist_wrapper(struct maze_markov_bellman_policy *p);
 
 void maze_markov_bellman_qlist_set_cost(struct maze_markov_bellman_list *l,struct maze_markov_state *s,enum maze_markov_action a,float val);
 float maze_markov_bellman_qlist_get_cost(struct maze_markov_bellman_list *l,struct maze_markov_state *s,enum maze_markov_action a);

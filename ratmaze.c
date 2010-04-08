@@ -13,7 +13,7 @@ main(int argc, char **argv)
 {
 	struct maze *m;
 	struct square s;
-	struct element *e = malloc(sizeof(struct element));
+	struct element *e;
 	struct maze_markov_decision_process *mdp;
 	int tmp;
 
@@ -22,19 +22,21 @@ main(int argc, char **argv)
 		printf( "usage: %s <algorithm> [Q-learling limit]\n"
 			"\t[0] Value Iteration\n"
 			"\t[1] Policy Iteration\n"
-			"\t[2] Q-learning (default)\n",
+			"\t[2] Q-learning\n",
 			argv[0]
 		);
 		exit(EXIT_SUCCESS);
 	}
-
+	
 	m = maze_create(5,3);
+	e = (__typeof__(e)) malloc(sizeof(struct element));
+
 	s.element = e;
 	e->name = 'R';
 	e->type = MAZE_ELEM_TYPE_INIT;
 
-	s.element = 0;
 	maze_add(m,&s,0,0);
+	s.element = 0;
 	maze_add(m,&s,0,1);
 	e->name = 'G';
 	e->reward = 1;

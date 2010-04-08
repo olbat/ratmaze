@@ -1,12 +1,14 @@
 #include "maze_solver_policy_iteration.h"
 #include "maze_markov.h"
 #include "maze_markov_bellman.h"
+#include "maze_solver_value_iteration.h"
 #include "ratmaze.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <float.h>
 #include <unistd.h>
+#include <math.h>
 
 struct maze_solver_pi_list *maze_solver_pi_list_create(
 	unsigned int t,
@@ -61,7 +63,7 @@ float maze_solver_pi_get_vlist_cost(
 	if (l)
 		ret = maze_markov_bellman_get_action_cost(l,prec);
 	else
-		ret = FLT_MIN;
+		ret = 0.0f;
 
 #ifdef MAZE_DEBUG
 	printf("V(%d)=%g\n",state->id,ret);
@@ -70,10 +72,87 @@ float maze_solver_pi_get_vlist_cost(
 	return ret;	
 }
 
+struct maze_markov_bellman_vlist *maze_solver_vi_pi_perform_results(
+	struct maze_markov_decision_process *mdp,
+	struct maze_markov_bellman_policy *policy
+)
+{
+	struct maze_markov_bellman_vlist *ret;
+	unsigned int t;
+	float maxs, tmpf;
+	struct maze_markov_bellman_vlist *node, *nodenew;
+	struct maze_solver_vi_list *tlist, *prectlist;
+	struct maze_markov_state_list *sl;
+	struct maze_markov_bellman_list *qlist;
+
+	ret = 0;
+
+	t = 0;
+	prectlist = 0;
+
+	do
+	{
+		sl = mdp->states;
+		node = 0;
+		
+		while (sl)
+		{
+			node = maze_markov_bellman_vlist_create(
+				sl->node,
+				maze_solver_pi_get_vlist_cost(
+					sl->node,
+					(prectlist?prectlist->vlist:0),
+					policy
+				),
+				node
+			);
+			sl = sl->next;
+		}
+		tlist = maze_solver_vi_list_create(t,prectlist,node);
+		
+		/* perform max Vt(S) - Vt-1(S) */
+		maxs = FLT_MIN;
+		nodenew = tlist->vlist;
+		while (nodenew)
+		{
+			node = (prectlist?prectlist->vlist:0);
+			while (
+				(node) && 
+				(node->state != nodenew->state)
+			)
+				node = node->next;
+
+			if (node)
+				tmpf = (fabs(nodenew->cost - node->cost));
+			else
+				tmpf = (fabs(nodenew->cost - MAZE_SOLVER_VI_V0));
+			if (tmpf > maxs)
+				maxs = tmpf; 
+
+			nodenew = nodenew->next;
+		}
+		
+		prectlist = tlist;
+		t++;
+	} while (maxs > MAZE_SOLVER_VI_EPSYLON);
+
+	/* find the optimal solution */
+	ret = tlist->vlist;
+	qlist = maze_markov_bellman_qlist_create(mdp,tlist->vlist);
+	policy = maze_markov_bellman_optimal_policy_create(qlist);
+	ret = maze_markov_bellman_policy_vlist_wrapper(policy);
+	
+	maze_solver_vi_list_destroy(tlist);
+	maze_markov_bellman_list_destroy(qlist);
+	maze_markov_bellman_policy_destroy(policy);
+
+	return ret;
+}
+
 void maze_solver_pi_perform(struct maze_markov_decision_process *mdp)
 {
 	unsigned int t;
-	struct maze_markov_bellman_vlist *node;
+	struct maze_markov_bellman_vlist *node, *vstar;
 	struct maze_solver_pi_list *tlist, *prectlist;
 	struct maze_markov_state_list *sl;
 	struct maze_markov_bellman_list *qlist;
@@ -100,19 +179,21 @@ void maze_solver_pi_perform(struct maze_markov_decision_process *mdp)
 
 	do
 	{
-		sl = mdp->states;
-		node = 0;
-		
 #ifdef MAZE_DEBUG
 		printf("[t:%d]\n",t);
 #endif
+		vstar = maze_solver_vi_pi_perform_results(mdp,policy);
+
+		sl = mdp->states;
+		node = 0;
+		
 		while (sl)
 		{
 			node = maze_markov_bellman_vlist_create(
 				sl->node,
 				maze_solver_pi_get_vlist_cost(
 					sl->node,
-					(prectlist?prectlist->vlist:0),
+					vstar,
 					policy
 				),
 				node
@@ -129,6 +210,7 @@ void maze_solver_pi_perform(struct maze_markov_decision_process *mdp)
 		qlist = maze_markov_bellman_qlist_create(mdp,tlist->vlist);
 		policy = maze_markov_bellman_optimal_policy_create(qlist);
 		maze_markov_bellman_list_destroy(qlist);
+		maze_markov_bellman_vlist_destroy(vstar);
 
 		prectlist = tlist;
 		t++;

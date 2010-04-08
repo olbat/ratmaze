@@ -191,7 +191,7 @@ maze_markov_state_build(
 	struct maze_markov_state *ret;
 
 	if ((ret = maze_markov_state_list_lookup(*expect,x,y))) 
-		0;
+		;
 	else if ((!MAZE_IS_VALID_POSITION(m,x,y)) || (!MAZE_GET_SQUARE(m,x,y)))
 		ret = 0;
 	else

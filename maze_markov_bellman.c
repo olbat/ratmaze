@@ -265,6 +265,24 @@ int maze_markov_bellman_policy_compare(
 	return ret;
 }
 
+struct maze_markov_bellman_vlist *maze_markov_bellman_policy_vlist_wrapper(
+	struct maze_markov_bellman_policy *p
+)
+{
+	struct maze_markov_bellman_vlist *ret;
+
+	ret = 0;
+
+	while (p)
+	{
+		ret = maze_markov_bellman_vlist_create(p->state,p->cost,ret);
+		p = p->next;
+	}
+
+	return ret;
+}
+
+
 void maze_markov_bellman_qlist_set_cost(
 	struct maze_markov_bellman_list *l,
 	struct maze_markov_state *s,
